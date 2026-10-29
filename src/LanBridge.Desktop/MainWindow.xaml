@@ -1,0 +1,133 @@
+<Window x:Class="LanBridge.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LanBridge — LAN Clipboard &amp; Files" Height="700" Width="870"
+        MinWidth="700" MinHeight="560" WindowStartupLocation="CenterScreen"
+        Background="#F5F7FA" Closing="Window_Closing">
+    <DockPanel Margin="16">
+        <Border DockPanel.Dock="Top" Background="#1B466E" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="LanBridge" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                <TextBlock x:Name="GroupStatus" Text="Đang khởi động..." Foreground="#D7E8FA" Margin="0,5,0,0"/>
+                <TextBlock x:Name="MyDevice" Foreground="#B8D3E9" FontSize="11" Margin="0,3,0,0"/>
+            </StackPanel>
+        </Border>
+        <TextBlock x:Name="MessageStatus" DockPanel.Dock="Bottom" Margin="6,8,6,0"
+                   Foreground="#38516A" Text="Sẵn sàng" TextTrimming="CharacterEllipsis"/>
+        <TabControl x:Name="Tabs" Background="White">
+            <TabItem Header="Trang chủ">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" BorderBrush="#D9E3EE" BorderThickness="1" Padding="14" CornerRadius="8" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Clipboard dùng chung" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="ClipboardState" Margin="0,6,0,6" Foreground="#516579"/>
+                            <WrapPanel>
+                                <TextBlock Text="Ctrl + Shift + C  →  Chia sẻ   |   Ctrl + Shift + V  →  Dán" VerticalAlignment="Center"/>
+                                <Button Content="Xóa clipboard chung" Click="ClearClipboard_Click" Margin="18,0,0,0"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                    <Border x:Name="FileDropArea" Grid.Row="1" AllowDrop="True"
+                            DragOver="FileDrop_DragOver" Drop="FileDrop_Drop"
+                            BorderBrush="#82A7C6" BorderThickness="2" CornerRadius="10"
+                            Background="#EDF5FC" Padding="17" Margin="0,0,0,12">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="↓ Kéo và thả file tại đây" FontWeight="SemiBold" FontSize="17" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Có thể chọn nhiều file · Không hỗ trợ thư mục trong V1"
+                                       Foreground="#4A6C8A" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <Button Content="Chọn file..." Click="AddFiles_Click" HorizontalAlignment="Center" Margin="0,9,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Grid Grid.Row="2" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <GroupBox Header="File đã chọn" Margin="0,0,6,0">
+                            <DockPanel Margin="8">
+                                <Button DockPanel.Dock="Bottom" Content="Xóa danh sách" Click="ClearFiles_Click" HorizontalAlignment="Right"/>
+                                <ListBox x:Name="FileList" Height="110"/>
+                            </DockPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Column="1" Header="Máy nhận đang online" Margin="6,0,0,0">
+                            <DockPanel Margin="8">
+                                <CheckBox x:Name="SelectAllMachines" DockPanel.Dock="Top" Content="Chọn tất cả"
+                                          Checked="SelectAllMachines_Changed" Unchecked="SelectAllMachines_Changed" Margin="4"/>
+                                <ScrollViewer Height="115" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="RecipientPanel"/>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </GroupBox>
+                    </Grid>
+                    <Button Grid.Row="3" x:Name="SendButton" Content="Gửi file đến các máy đã chọn"
+                            Click="Send_Click" Background="#176DB4" Foreground="White" FontWeight="SemiBold"
+                            HorizontalAlignment="Right" MinWidth="240" Margin="0,0,0,12"/>
+                    <GroupBox Grid.Row="4" Header="Truyền file gần đây">
+                        <DockPanel Margin="8">
+                            <Button DockPanel.Dock="Bottom" Content="Hủy tác vụ đã chọn" Click="CancelTransfer_Click" HorizontalAlignment="Right"/>
+                            <ListBox x:Name="TransferList"/>
+                        </DockPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Thiết bị &amp; Nhóm">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16">
+                        <WrapPanel Margin="0,0,0,10">
+                            <Button Content="Tạo nhóm mới" x:Name="CreateGroupButton" Click="CreateGroup_Click"/>
+                            <Button Content="Xin tham gia máy được chọn" x:Name="JoinGroupButton" Click="JoinGroup_Click"/>
+                            <Button Content="Tìm máy theo IP..." Click="ManualIp_Click"/>
+                            <Button Content="Rời nhóm (máy này)" Click="LeaveGroup_Click"/>
+                        </WrapPanel>
+                        <TextBlock Text="Máy tìm được trong LAN (chọn Admin của nhóm muốn tham gia)" FontWeight="SemiBold" Margin="4,0,0,6"/>
+                        <ListBox x:Name="DiscoveredList" Height="135" DisplayMemberPath="Caption"/>
+                        <TextBlock x:Name="PairingState" Foreground="#1B6695" Margin="4,8,0,10"/>
+                        <TextBlock Text="Yêu cầu tham gia đang chờ Admin duyệt" FontWeight="SemiBold" Margin="4,4,0,6"/>
+                        <ListBox x:Name="RequestList" Height="88" DisplayMemberPath="Caption"/>
+                        <WrapPanel Margin="0,6,0,12">
+                            <Button Content="Duyệt yêu cầu" Click="Approve_Click"/>
+                            <Button Content="Từ chối" Click="Reject_Click"/>
+                        </WrapPanel>
+                        <TextBlock Text="Thành viên trong nhóm" FontWeight="SemiBold" Margin="4,0,0,6"/>
+                        <ListBox x:Name="MemberList" Height="128" DisplayMemberPath="Caption"/>
+                        <WrapPanel Margin="0,6,0,0">
+                            <Button Content="Cấp Admin" Click="Promote_Click"/>
+                            <Button Content="Thu hồi Admin" Click="Demote_Click"/>
+                            <Button Content="Xóa thiết bị khỏi nhóm" Click="Revoke_Click"/>
+                        </WrapPanel>
+                        <TextBlock Foreground="#607B94" FontSize="11" Text="Các máy ngoài nhóm không thể đọc clipboard hoặc gửi file. Khi thêm máy mới, đối chiếu mã 6 số hiển thị trên cả hai máy." Margin="4,8,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Cài đặt">
+                <StackPanel Margin="18">
+                    <TextBlock Text="Thư mục tự động nhận file" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Chọn thư mục" Click="BrowseFolder_Click"/>
+                        <TextBox x:Name="FolderText"/>
+                    </DockPanel>
+                    <TextBlock Text="Phím tắt chia sẻ (VD: Ctrl+Shift+C)" FontWeight="SemiBold" Margin="0,20,0,5"/>
+                    <TextBox x:Name="CopyHotkeyText" Width="220" HorizontalAlignment="Left"/>
+                    <TextBlock Text="Phím tắt dán (VD: Ctrl+Shift+V)" FontWeight="SemiBold" Margin="0,15,0,5"/>
+                    <TextBox x:Name="PasteHotkeyText" Width="220" HorizontalAlignment="Left"/>
+                    <CheckBox x:Name="EnableClipboardCheck" Content="Bật chia sẻ Clipboard trên máy này" Margin="4,15,0,0"/>
+                    <CheckBox x:Name="AutostartCheck" Content="Tự khởi động cùng Windows" Margin="4,10,0,0"/>
+                    <WrapPanel Margin="0,22,0,0">
+                        <Button Content="Lưu cấu hình" Background="#176DB4" Foreground="White" Click="SaveSettings_Click"/>
+                        <Button Content="Mở thư mục nhận" Click="OpenFolder_Click"/>
+                    </WrapPanel>
+                    <Separator Margin="0,22,0,15"/>
+                    <TextBlock Text="Chẩn đoán kết nối" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="DiagnosticText" Margin="0,7,0,0" Foreground="#516579"/>
+                    <WrapPanel Margin="0,8,0,0">
+                        <Button Content="Kiểm tra Firewall" Click="CheckFirewall_Click"/>
+                        <Button Content="Sửa Firewall tự động (UAC)" Click="RepairFirewall_Click"/>
+                    </WrapPanel>
+                    <TextBlock Text="Các mạng Public, VPN và Wi-Fi có client isolation có thể ngăn discovery/kết nối. Installer chỉ tạo firewall rule trong Private LAN." Margin="0,8,0,0" Foreground="#6B7887" FontSize="11"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

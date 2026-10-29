@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/LanBridge.Core/LanBridge.Core.csproj" />
+  <Project Path="src/LanBridge.Desktop/LanBridge.Desktop.csproj" />
+  <Project Path="tests/LanBridge.SmokeTests/LanBridge.SmokeTests.csproj" />
+</Solution>
